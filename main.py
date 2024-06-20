@@ -13,7 +13,7 @@ current_dir = path.dirname(path.abspath(getsourcefile(lambda: 0)))
 
 config = dotenv_values(path.join(current_dir, ".env"))
 
-response = requests.get("https://georgians.gr/feed/")
+response = requests.get(config["FEED_URL"])
 
 try:
     with open(path.join(current_dir, "last_known_post_date.txt"), "r") as f:
@@ -44,7 +44,10 @@ for entry in feed.entries:
             title=entry.title,
             url=entry.link,
             description=markdownify(
-                "".join(map(lambda c: c.value, entry.content)), strip=["img"]
+                "".join(map(lambda c: c.value, entry.content))
+                if "content" in entry
+                else entry.description,
+                strip=["img"],
             ),
             timestamp=datetime.datetime.fromtimestamp(
                 time.mktime(entry.published_parsed)
