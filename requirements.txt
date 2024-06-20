@@ -1,0 +1,5 @@
+requests
+feedparser
+markdownify
+discord-webhook
+python-dotenv
