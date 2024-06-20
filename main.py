@@ -52,7 +52,7 @@ with open("last_known_post_date.txt", "w") as f:
     f.write(time.strftime("%Y-%m-%dT%H:%M:%SZ", last_post_date_in_feed))
 
 webhook = DiscordWebhook(
-    url=config["DISCORD_WEBHOOK_URL"],
+    url=config["DISCORD_CHANNEL_WEBHOOK_URL"],
     rate_limit_retry=True,
 )
 
