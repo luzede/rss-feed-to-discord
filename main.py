@@ -48,11 +48,7 @@ for entry in feed.entries:
         and time.mktime(entry.published_parsed) <= last_known_post_timestamp
     ):
         continue
-    print(time.mktime(entry.published_parsed))
-    print(latest_post_timestamp)
-    print(last_known_post_timestamp)
 
-    print("New post")
     posts_for_discord.append(
         DiscordEmbed(
             title=entry.title,
@@ -73,7 +69,6 @@ for entry in feed.entries:
 with open(path.join(current_dir, "last_known_post_timestamp.txt"), "w") as f:
     f.write(f"{latest_post_timestamp}")
 
-print()
 
 webhook = DiscordWebhook(
     url=config["DISCORD_CHANNEL_WEBHOOK_URL"],
