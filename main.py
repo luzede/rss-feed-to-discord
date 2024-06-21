@@ -16,29 +16,43 @@ config = dotenv_values(path.join(current_dir, ".env"))
 response = requests.get(config["FEED_URL"])
 
 try:
-    with open(path.join(current_dir, "last_known_post_date.txt"), "r") as f:
-        last_known_post_date = time.strptime(f.read(), "%Y-%m-%dT%H:%M:%SZ")
-        print(last_known_post_date)
+    with open(path.join(current_dir, "last_known_post_timestamp.txt"), "r") as f:
+        last_known_post_timestamp = float(f.read())
 except FileNotFoundError:
-    last_known_post_date = None
+    # If the file does not exist, set the last known post timestamp to None
+    last_known_post_timestamp = None
+except ValueError:
+    # If the file is empty or unable to convert to float, set the last known post timestamp to None
+    last_known_post_timestamp = None
+except Exception as e:
+    # Any other error
+    print(e)
+    last_known_post_timestamp = None
 
 
 feed = feedparser.parse(response.content)
 
 posts_for_discord = []
-latest_post_date = last_known_post_date
+latest_post_timestamp = last_known_post_timestamp
 
 for entry in feed.entries:
     # Finding the latest post date in the feed
-    if latest_post_date is None or entry.published_parsed > latest_post_date:
-        latest_post_date = entry.published_parsed
+    if (
+        latest_post_timestamp is None
+        or time.mktime(entry.published_parsed) > latest_post_timestamp
+    ):
+        latest_post_timestamp = time.mktime(entry.published_parsed)
     # Checking if the post is already sent by comparing the post date with the last known sent post date
     if (
-        last_known_post_date is not None
-        and entry.published_parsed <= last_known_post_date
+        last_known_post_timestamp is not None
+        and time.mktime(entry.published_parsed) <= last_known_post_timestamp
     ):
         continue
+    print(time.mktime(entry.published_parsed))
+    print(latest_post_timestamp)
+    print(last_known_post_timestamp)
 
+    print("New post")
     posts_for_discord.append(
         DiscordEmbed(
             title=entry.title,
@@ -56,8 +70,8 @@ for entry in feed.entries:
         )
     )
 
-with open(path.join(current_dir, "last_known_post_date.txt"), "w") as f:
-    f.write(time.strftime("%Y-%m-%dT%H:%M:%SZ", latest_post_date))
+with open(path.join(current_dir, "last_known_post_timestamp.txt"), "w") as f:
+    f.write(f"{latest_post_timestamp}")
 
 print()
 
